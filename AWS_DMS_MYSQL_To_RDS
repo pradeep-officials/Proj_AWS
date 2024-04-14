@@ -1,0 +1,30 @@
+step-1:
+create replication instance from 'migration data' section.
+
+step-2-create source end point :
+
+useriD:admin_db4free
+Pass:******
+
+step3:create RDS>>MYSQL database
+useriD:admin
+Pass:******
+
+step 4:create endpint destination:
+
+step 5:create task
+
+
+------------to connect RDS mysql from onpremise sql workbench tool:
+
+--go to RDS VPC sec group and add a rull to allow all IPV4 trafic.
+--connect RDS server in SQL Workbench
+
+Endpoint:
+database-1.cpymjr94ekk0.us-east-1.rds.amazonaws.com
+
+Port:
+3306
+
+
+
