@@ -1,0 +1,50 @@
+import sys
+from awsglue.transforms import *
+from awsglue.utils import getResolvedOptions
+from pyspark.context import SparkContext
+from awsglue.context import GlueContext
+from awsglue.job import Job
+from awsglue.dynamicframe import DynamicFrame
+
+## @params: [JOB_NAME]
+args = getResolvedOptions(sys.argv, ['JOB_NAME'])
+
+sc = SparkContext()
+glueContext = GlueContext(sc)
+spark = glueContext.spark_session
+job = Job(glueContext)
+job.init(args['JOB_NAME'], args)
+
+#****** set variable to be used to connect the database *****
+database = "TestDB"
+table = "test"
+user = "admin_db4free"
+password  = "*****"
+qry="select * from test"
+print(qry)
+jdbcDF = spark.read.format("jdbc") \
+    .option("url", f"jdbc:mysql://www.db4free.net:3306/testdb2023") \
+    .option("dbtable", '({sql}) as src'.format(sql=qry)) \
+    .option("user", user) \
+    .option("password", password) \
+    .option("driver", "com.mysql.cj.jdbc.Driver") \
+    .load()
+    
+print("Record count",jdbcDF.count())
+
+dynamic_glue_df=DynamicFrame.fromDF(
+    jdbcDF,
+    glueContext,
+    "convert_ctx"
+    )
+glueContext.write_dynamic_frame.from_options(
+    frame=dynamic_glue_df,
+    connection_type="s3",
+    format="csv",
+    connection_options={
+        "path": "s3://outputbucket032023/glue-output/",
+        "partitionKeys": [],
+    },
+    transformation_ctx="AmazonS3_node1677685510539"
+    )
+job.commit()
